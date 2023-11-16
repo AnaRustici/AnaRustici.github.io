@@ -31,7 +31,7 @@ let coloresGraficaPlenos = [
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-lila2'),
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-verde'),
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-gris')
-]
+];
 let coloresGraficaLivianos = [
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-amarillo-claro'),
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-celeste-claro'),
@@ -40,7 +40,17 @@ let coloresGraficaLivianos = [
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-lila2-claro'),
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-verde-claro'),
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-gris-claro')
-]
+];
+
+const agrupacionesInfo = {
+    132: { colorPleno: coloresGraficaPlenos[0], colorLiviano: coloresGraficaLivianos[0] },
+    137: { colorPleno: coloresGraficaPlenos[1], colorLiviano: coloresGraficaLivianos[1] },
+    136: { colorPleno: coloresGraficaPlenos[2], colorLiviano: coloresGraficaLivianos[2] },
+    135: { colorPleno: coloresGraficaPlenos[3], colorLiviano: coloresGraficaLivianos[3] },
+    94: { colorPleno: coloresGraficaPlenos[4], colorLiviano: coloresGraficaLivianos[4] },
+    133: { colorPleno: coloresGraficaPlenos[5], colorLiviano: coloresGraficaLivianos[5] },
+    92: { colorPleno: coloresGraficaPlenos[6], colorLiviano: coloresGraficaLivianos[6] },
+};
 
 const provinciasSVG = [
     { provincia: 'Ciudad Autónoma de Buenos Aires', id: '1', svg: '<svg><path class="leaflet-interactive" stroke="#18a0fb" stroke-opacity="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#18a0fb" fill-opacity="1" fill-rule="evenodd" d="M182 61L179 56L176 58L178 56L176 53L173 55L169 47L168 48L164 45L157 43L158 41L155 41L154 36L149 32L148 33L143 29L142 30L145 32L140 29L138 32L137 30L140 29L139 26L137 28L136 23L133 22L130 27L103 41L81 99L82 134L131 179L159 140L168 137L171 139L174 138L181 141L186 137L195 136L200 130L207 125L205 120L210 118L210 112L205 107L210 110L213 114L215 113L215 110L217 110L218 112L219 111L217 109L221 111L224 109L220 106L222 106L221 102L218 102L216 104L215 103L217 102L212 102L220 101L219 95L216 92L214 86L208 81L200 83L199 80L201 79L202 81L200 77L206 75L203 75L203 73L206 73L201 71L205 70L199 69L198 68L202 68L200 66L195 67L194 66L198 65L188 62L192 62L190 60L183 59L189 64L187 65z"></path></svg>' },
@@ -88,6 +98,9 @@ function ocultarCarga(){
 ocultarCarteles();
 ocultarCarga();
 
+cartelAmarillo.innerHTML='<i class="fa fa-exclamation"></i> Debe seleccionar los valores a filtrar y hacer clic en el botón FILTRAR';
+cartelAmarillo.style.display = "block";
+
 async function consultarComboAnio(){
     try {
         const respuesta = await fetch("https://resultados.mininterior.gob.ar/api/menu/periodos");
@@ -112,6 +125,7 @@ async function consultarComboAnio(){
     }
 }
 function comboCargo() {
+    cartelAmarillo.style.display = "none";
     fetch("https://resultados.mininterior.gob.ar/api/menu?año=" + selectAnio.value)
         .then(response => response.json())
         .then(data => {
@@ -122,6 +136,11 @@ function comboCargo() {
 
             datosAPI.forEach((eleccion) => {
                 if (eleccion.IdEleccion === tipoEleccion) {
+                    primeraOpcion.value = '0';
+                    primeraOpcion.text = 'Cargo';
+                    primeraOpcion.disabled = true;
+                    primeraOpcion.selected = true;
+                    selectCargo.appendChild(primeraOpcion);
                     eleccion.Cargos.forEach(cargo => {
                         const option = document.createElement('option');
                         option.value = cargo.IdCargo;
@@ -138,6 +157,11 @@ function comboCargo() {
 }
 function comboDistrito() {
     selectDistrito.innerHTML = '';
+    primeraOpcion.value = '0';
+    primeraOpcion.text = 'Distrito';
+    primeraOpcion.disabled = true;
+    primeraOpcion.selected = true;
+    selectDistrito.appendChild(primeraOpcion);
     try {
         console.log(datosAPI);
         datosAPI.forEach((eleccion) => {
@@ -145,11 +169,6 @@ function comboDistrito() {
                 eleccion.Cargos.forEach(cargo => {  
                     if (cargo.IdCargo == selectCargo.value) {
                         console.log(cargo.Distritos);
-                        primeraOpcion.value = '0';
-                        primeraOpcion.text = 'Distrito';
-                        primeraOpcion.disabled = true;
-                        primeraOpcion.selected = true;
-                        selectDistrito.appendChild(primeraOpcion);
                         cargo.Distritos.forEach(distrito => {
                             const option = document.createElement('option');
                             option.value = distrito.IdDistrito;
@@ -167,6 +186,11 @@ function comboDistrito() {
 }
 function comboSeccion() {
     selectSeccion.innerHTML = '';
+    primeraOpcion.value = '0';
+    primeraOpcion.text = 'Sección';
+    primeraOpcion.disabled = true;
+    primeraOpcion.selected = true;
+    selectSeccion.appendChild(primeraOpcion);
     try {
         datosAPI.forEach((eleccion) => {
             if (eleccion.IdEleccion == tipoEleccion) {
@@ -176,11 +200,6 @@ function comboSeccion() {
                             if (distrito.IdDistrito == selectDistrito.value) {
                                 distrito.SeccionesProvinciales.forEach(secProvincial => {
                                     seccionProvincial.value = secProvincial.IDSeccionProvincial;
-                                    primeraOpcion.value = '0';
-                                    primeraOpcion.text = 'Sección';
-                                    primeraOpcion.disabled = true;
-                                    primeraOpcion.selected = true;
-                                    selectSeccion.appendChild(primeraOpcion);
                                     secProvincial.Secciones.forEach(seccion => {
                                         const option = document.createElement('option');
                                         option.value = seccion.IdSeccion;
@@ -217,10 +236,9 @@ async function consultarResultados() {
         let seccionProvincialId = seccionProvincial.value;
         let seccionId = selectSeccion.value;
 
-        let anioString = selectAnio.options[selectAnio.selectedIndex].innerText;
-        let categoriaString = selectCargo.options[selectCargo.selectedIndex].innerText;
-        let distritoString = selectDistrito.options[selectDistrito.selectedIndex].innerText;
-        let seccionString = selectSeccion.options[selectSeccion.selectedIndex].innerText;
+        categoriaString = selectCargo.options[selectCargo.selectedIndex].innerText;
+        distritoString = selectDistrito.options[selectDistrito.selectedIndex].innerText;
+        seccionString = selectSeccion.options[selectSeccion.selectedIndex].innerText;
 
         let parametros = `?anioEleccion=${anioEleccion}&tipoRecuento=${tipoRecuento}&tipoEleccion=${tipoEleccion}&categoriaId=${categoriaId}&distritoId=${distritoId}&seccionProvincialId=${seccionProvincialId}&seccionId=${seccionId}&circuitoId=&mesaId=`
         try {
@@ -228,15 +246,30 @@ async function consultarResultados() {
             cargandoDatos.style.visibility = "visible";
             const response = await fetch(url + parametros);
             if (response.ok) {
-                cartelVerde.style.display = 'block'
+                ocultarCarteles();
                 tituloPaso.innerHTML = `Elecciones ${anioEleccion} | Paso`
                 subtituloPaso.innerHTML = `${anioEleccion} > Paso > ${categoriaString} > ${distritoString} > ${seccionString}`
                 resultados = await response.json();
                 ocultarCarga();
-                console.log(resultados)
-                mesasEscrutadas.innerHTML = `Mesas escrutadas ${resultados.estadoRecuento.mesasTotalizadas}`;
-                electores.innerHTML = `Electores ${resultados.estadoRecuento.cantidadElectores}`;
-                participacionSobreEscrutado.innerHTML = `Participacion sobre escrutado ${resultados.estadoRecuento.participacionPorcentaje}%`;
+                console.log(resultados);
+                mesasEscrutadas.innerHTML = `Mesas escrutadas: ${resultados.estadoRecuento.mesasTotalizadas}`;
+                electores.innerHTML = `Electores: ${resultados.estadoRecuento.cantidadElectores}`;
+                participacionSobreEscrutado.innerHTML = `Participacion sobre escrutado: ${resultados.estadoRecuento.participacionPorcentaje}%`;
+
+                let cuadroAgrupaciones = document.getElementsByClassName('info-agrupaciones')[0];
+                let nuevoDiv = document.createElement('div');
+                
+                resultados.valoresTotalizadosPositivos.forEach(agrup => {
+                    let span = document.createElement('span');
+                    span.innerHTML = `<span class="nombre-agrupacion">${agrup.nombreAgrupacion}</span>`;
+                    nuevoDiv.appendChild(span);
+                    let elementoHR = document.createElement('hr');
+                    nuevoDiv.appendChild(elementoHR);
+                });
+                
+                cuadroAgrupaciones.appendChild(nuevoDiv);
+
+                
                 for(i=0 ; i<25 ; i++){
                     if(distritoId == i){
                         
@@ -261,8 +294,9 @@ async function consultarResultados() {
         ocultarCarga();
         cartelAmarillo.style.display = 'block'
     }
-    
 }
+
+
 function agregarInforme() {
     // Obtener la lista de informes almacenados en localStorage bajo la clave 'INFORMES'
     let informes;
