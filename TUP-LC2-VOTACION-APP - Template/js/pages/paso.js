@@ -1,3 +1,5 @@
+//import { provinciasSVG } from "../mapas.js";
+
 const tipoEleccion = 1;
 const tipoRecuento = 1;
 
@@ -23,6 +25,9 @@ let categoriaString = "";
 let distritoString = "";
 let seccionString = "";
 
+let cuadroBarrasPartidos = document.getElementById('mostrar-grafica');
+cuadroBarrasPartidos.style.display = 'none';
+
 let coloresGraficaPlenos = [
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-amarillo'),
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-celeste'),
@@ -41,16 +46,6 @@ let coloresGraficaLivianos = [
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-verde-claro'),
     getComputedStyle(document.documentElement).getPropertyValue('--grafica-gris-claro')
 ];
-
-const agrupacionesInfo = {
-    132: { colorPleno: coloresGraficaPlenos[0], colorLiviano: coloresGraficaLivianos[0] },
-    137: { colorPleno: coloresGraficaPlenos[1], colorLiviano: coloresGraficaLivianos[1] },
-    136: { colorPleno: coloresGraficaPlenos[2], colorLiviano: coloresGraficaLivianos[2] },
-    135: { colorPleno: coloresGraficaPlenos[3], colorLiviano: coloresGraficaLivianos[3] },
-    94: { colorPleno: coloresGraficaPlenos[4], colorLiviano: coloresGraficaLivianos[4] },
-    133: { colorPleno: coloresGraficaPlenos[5], colorLiviano: coloresGraficaLivianos[5] },
-    92: { colorPleno: coloresGraficaPlenos[6], colorLiviano: coloresGraficaLivianos[6] },
-};
 
 const provinciasSVG = [
     { provincia: 'Ciudad Autónoma de Buenos Aires', id: '1', svg: '<svg><path class="leaflet-interactive" stroke="#18a0fb" stroke-opacity="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#18a0fb" fill-opacity="1" fill-rule="evenodd" d="M182 61L179 56L176 58L178 56L176 53L173 55L169 47L168 48L164 45L157 43L158 41L155 41L154 36L149 32L148 33L143 29L142 30L145 32L140 29L138 32L137 30L140 29L139 26L137 28L136 23L133 22L130 27L103 41L81 99L82 134L131 179L159 140L168 137L171 139L174 138L181 141L186 137L195 136L200 130L207 125L205 120L210 118L210 112L205 107L210 110L213 114L215 113L215 110L217 110L218 112L219 111L217 109L221 111L224 109L220 106L222 106L221 102L218 102L216 104L215 103L217 102L212 102L220 101L219 95L216 92L214 86L208 81L200 83L199 80L201 79L202 81L200 77L206 75L203 75L203 73L206 73L201 71L205 70L199 69L198 68L202 68L200 66L195 67L194 66L198 65L188 62L192 62L190 60L183 59L189 64L187 65z"></path></svg>' },
@@ -256,20 +251,8 @@ async function consultarResultados() {
                 electores.innerHTML = `Electores: ${resultados.estadoRecuento.cantidadElectores}`;
                 participacionSobreEscrutado.innerHTML = `Participacion sobre escrutado: ${resultados.estadoRecuento.participacionPorcentaje}%`;
 
-                let cuadroAgrupaciones = document.getElementsByClassName('info-agrupaciones')[0];
-                let nuevoDiv = document.createElement('div');
-                
-                resultados.valoresTotalizadosPositivos.forEach(agrup => {
-                    let span = document.createElement('span');
-                    span.innerHTML = `<span class="nombre-agrupacion">${agrup.nombreAgrupacion}</span>`;
-                    nuevoDiv.appendChild(span);
-                    let elementoHR = document.createElement('hr');
-                    nuevoDiv.appendChild(elementoHR);
-                });
-                
-                cuadroAgrupaciones.appendChild(nuevoDiv);
+                agregaCuadrosAgrupaciones();
 
-                
                 for(i=0 ; i<25 ; i++){
                     if(distritoId == i){
                         
@@ -278,6 +261,9 @@ async function consultarResultados() {
                         //modificamos el html svg con el arreglo de objetos posicion i-1 porque cuando llega ya es el siguiente
                     }
                 }
+
+                agregarResumenVotos();
+
             } else {    
                 ocultarCarteles();
                 ocultarCarga();
@@ -344,72 +330,78 @@ function agregarInforme() {
         cartelVerde.style.display = "block"
     } else {
         ocultarCarteles();
-        cartelAmarillo.innerHTML='<i class="fa fa-exclamation"> </i>Los datos ya están en la lista de informes, no se han agregado.'
+        cartelAmarillo.innerHTML='<i class="fa fa-exclamation"> </i> Los datos ya están en la lista de informes, no se han agregado.'
         cartelAmarillo.style.display = "block"
     }
 }
 
 
-function agregaCuadrosAgrupaciones(prueba_JSON) {
-    let agrupaciones = prueba_JSON.valoresTotalizadosPositivos.sort((a, b) => b.votos - a.votos);  // Ordena de mayor a menor
-    let idColor = -1;
-    let cadenaInnerhtml = "";
-    let cadenaInicial = `<div class="cuadro-Agrupaciones-centrado">
-      <div class="Agrupacion">`;
-  
-    let cadenaIterada = "";
-    if (agrupaciones) {
-      agrupaciones.forEach((agrupacion) => {
-        if (idColor < 6) {
-          idColor += 1;
-        }
-  
-        let indColor = idColor;
-        let tituloAgrupacion = agrupacion.nombreAgrupacion;
-        let cadenaTitulo = `<h6>${tituloAgrupacion}</h6><hl>`;
-        let partidos = agrupacion.listas;
-        let cadenaPartidos = "";
-  
-        partidos.forEach((partido) => {
-          let nombre = partido.nombre;
-          let porcentajeVotos = (parseFloat(partido.votos * 100) / parseFloat(agrupacion.votos));
-          let votos = ` <small>${partido.votos} votos</small>`;
-  
-          cadenaPartidos += `<p>${nombre} <span>${votos}</span></p>
-            <div class="progress" style="background: var(--colorLiviano${indColor});">
-              <div class="progress-bar" style="width:${porcentajeVotos}%; background: var(--colorPleno${indColor});">
-                <span class="progress-bar-text">${porcentajeVotos.toFixed(2)}%</span>
-              </div>
-            </div>`;
-        });
-        cadenaIterada += cadenaTitulo + cadenaPartidos;
-      });
-  
-      let cadenaFinal = `</div>
-        </div>`;
-  
-      cadenaInnerhtml = cadenaInicial + cadenaIterada + cadenaFinal;
-      $divAgrupaciones.innerHTML = "";
-      $divAgrupaciones.innerHTML = cadenaInnerhtml;
-    }
-  }
+function agregaCuadrosAgrupaciones() {
+    let cuadroAgrupaciones = document.getElementsByClassName('info-agrupaciones')[0];
+    let nuevoDiv = document.createElement('div');
+    
+    resultados.valoresTotalizadosPositivos.forEach((agrup, indice) => {
+        let divPartido = document.createElement('div');
+        divPartido.innerHTML = `<div class="nombre-agrupacion">${agrup.nombreAgrupacion}</div>`;
+        
+        let elementoHR = document.createElement('hr');
+        divPartido.appendChild(elementoHR);
+    
+        let divAgrupaciones = document.createElement('div');
+    
+        agrup.listas.forEach(lista => {
+            let divLista = document.createElement('div');
+            let porcentajeVotosLista = 0;
 
-  function agregarResumenVotos(json) {
-    $divResumenVotos.innerHTML = ``;
-    let agrupaciones = json.valoresTotalizadosPositivos.sort((a, b) => b.votos - a.votos);  //!ordena de mayor a menor
-    let barras = ``;
-    let cadenaInnerhtml = ``;
-    let cont = 0;
-    let cadenaInicial = `<div class="chart-wrap horizontal">
-    <div class="grid">`;
-    agrupaciones.forEach((agrupacion) => {
-      if (cont < 7) {
-        barras += `<div class="bar" id="partido-${cont}" style="--bar-value:${parseFloat(agrupacion.votosPorcentaje) * 2}%;background-color: var(${colorPleno[cont]});" data-name="${agrupacion.nombreAgrupacion}";></div>`;
-      }
-      cont++;
+            if (agrup.votos == 0){
+                porcentajeVotosLista = 0;
+            } else{
+                porcentajeVotosLista = lista.votos * 100 / agrup.votos;
+            }
+            
+            let porcentajeRedondeado = porcentajeVotosLista.toFixed(2);
+
+            let colorPleno = coloresGraficaPlenos[indice % coloresGraficaPlenos.length];
+            let colorLiviano = coloresGraficaLivianos[indice % coloresGraficaLivianos.length];
+
+            divLista.innerHTML = `<div class="div-agrupaciones">
+            <div><b>${lista.nombre}</b></div>
+            <div>${porcentajeRedondeado}% <br> ${lista.votos} votos</div>
+            </div>
+            <div class="progress" style="background: ${colorLiviano};">
+            <div class="progress-bar" style="width:${porcentajeRedondeado}%; background: ${colorPleno};">
+                <span class="progress-bar-text">${porcentajeRedondeado}%</span>
+            </div>
+            </div>`;
+
+            divAgrupaciones.appendChild(divLista);
+        });
+    
+        divPartido.appendChild(divAgrupaciones); // Anidamos divAgrupaciones dentro de divPartido
+        nuevoDiv.appendChild(divPartido);
     });
-    let cadenaFinal = `</div>
-    </div>`;
-    cadenaInnerhtml = cadenaInicial + barras + cadenaFinal;
-    $divResumenVotos.innerHTML = cadenaInnerhtml;
-  }
+    
+    cuadroAgrupaciones.appendChild(nuevoDiv);
+}
+
+function agregarResumenVotos() {
+    let cuadroBarras = document.getElementsByClassName('grid')[0];
+
+    resultados.valoresTotalizadosPositivos.slice(0, 7).forEach((agrup, indice) => {
+        let porcentajeVotos = agrup.votosPorcentaje;  // Ajusta el valor del porcentaje según tu lógica
+        let colorBarra = coloresGraficaPlenos[indice];  // Ajusta el color según tu lógica
+        let tituloPartido = agrup.nombreAgrupacion;
+
+        let barra = document.createElement('div');
+        barra.className = 'bar';
+        barra.innerHTML = `
+            <div class="bar" style="--bar-value: ${porcentajeVotos}%; --bar-color: ${colorBarra};"
+                data-name="${tituloPartido}" title="Partido ${tituloPartido} ${porcentajeVotos}%">
+            </div>
+        `;
+
+        cuadroBarras.appendChild(barra);
+
+    })
+    cuadroBarrasPartidos.style.display = 'block';
+}
