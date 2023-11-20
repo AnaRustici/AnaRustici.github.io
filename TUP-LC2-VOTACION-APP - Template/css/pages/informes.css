@@ -137,6 +137,12 @@ tbody {
     background-color: rgb(255, 255, 255);
     padding: 15px 0px;
     font-size: 12px;
+    max-height: 325px;
+    overflow-y: scroll;
+}
+
+tbody tr:first-child {
+    display: none;
 }
 
 
@@ -200,13 +206,22 @@ tbody {
     color: white;
 }
 
+.datos-elecciones {
+    font-size: 10px;
+    color: white;
+    text-align: center;
+}
+
 .datos-agrupacion {
     grid: 100px 100px;
-    /*overflow-y: scroll;*/
     height: 325px;
     padding: 5px;
     font-size: 10px;
     color: var(--textos);
+}
+#div-agrupacion {
+    max-height: 250px;
+    overflow-y: scroll;
 }
 #div-agrupacion div{
     display: flex;

@@ -18,7 +18,7 @@ let imagenMapa = document.getElementById('imagen-mapa');
 let mesasEscrutadas = document.getElementById('mesas-escrutadas-numero');
 let electores = document.getElementById('electores-numero');
 let participacionSobreEscrutado = document.getElementById('participacion-sobre-escrutado');
-let svgMapa = document.getElementById('svg-mapa');
+let svgMapa = document.getElementById('img-mapa');
 let svgTituloMapa = document.getElementById("titulo-svg");
 let anioString = "";
 let categoriaString = "";
@@ -119,6 +119,7 @@ async function consultarComboAnio(){
         console.log(err);
     }
 }
+
 function comboCargo() {
     cartelAmarillo.style.display = "none";
     fetch("https://resultados.mininterior.gob.ar/api/menu?año=" + selectAnio.value)
@@ -129,13 +130,14 @@ function comboCargo() {
 
             selectCargo.innerHTML = '';
 
+            primeraOpcion.value = '0';
+            primeraOpcion.text = 'Cargo';
+            primeraOpcion.disabled = true;
+            primeraOpcion.selected = true;
+            selectCargo.appendChild(primeraOpcion);
+
             datosAPI.forEach((eleccion) => {
                 if (eleccion.IdEleccion === tipoEleccion) {
-                    primeraOpcion.value = '0';
-                    primeraOpcion.text = 'Cargo';
-                    primeraOpcion.disabled = true;
-                    primeraOpcion.selected = true;
-                    selectCargo.appendChild(primeraOpcion);
                     eleccion.Cargos.forEach(cargo => {
                         const option = document.createElement('option');
                         option.value = cargo.IdCargo;
@@ -150,8 +152,10 @@ function comboCargo() {
             console.error('Error al cargar los datos: ', error);
         });
 }
+
 function comboDistrito() {
     selectDistrito.innerHTML = '';
+
     primeraOpcion.value = '0';
     primeraOpcion.text = 'Distrito';
     primeraOpcion.disabled = true;
@@ -179,8 +183,10 @@ function comboDistrito() {
         console.log(err);
     }
 }
+
 function comboSeccion() {
     selectSeccion.innerHTML = '';
+
     primeraOpcion.value = '0';
     primeraOpcion.text = 'Sección';
     primeraOpcion.disabled = true;
@@ -255,7 +261,6 @@ async function consultarResultados() {
 
                 for(i=0 ; i<25 ; i++){
                     if(distritoId == i){
-                        
                         svgMapa.innerHTML = provinciasSVG[i-1].svg;
                         svgTituloMapa.innerHTML = provinciasSVG[i-1].provincia;
                         //modificamos el html svg con el arreglo de objetos posicion i-1 porque cuando llega ya es el siguiente
@@ -289,7 +294,7 @@ function agregarInforme() {
     let informesEnLocalStorage = localStorage.getItem('INFORMES');
 
     if (informesEnLocalStorage) {
-        informes = JSON.parse(informesEnLocalStorage);
+        informes = informesEnLocalStorage;
     } else {
         informes = [];
     }
@@ -316,15 +321,15 @@ function agregarInforme() {
         let vCargoSeleccionado= categoriaString;
         let vDistritoSeleccionado= distritoString;
         let seccionSeleccionada= seccionString;
-        let nuevosDatos = `|${vAnio}|${vTipoRecuento}|${vTipoEleccion}|${vCategoriaId}|${vDistrito}|${vSeccionProvincial}|${vSeccionId}|${vCircuitoId}|${vMesaId}|${vAnioSeleccionado}|${vCargoSeleccionado}|${vDistritoSeleccionado}|${seccionSeleccionada}`
+        let nuevosDatos = `|${vAnio}|${vTipoRecuento}|${vTipoEleccion}|${vCategoriaId}|${vDistrito}|${vSeccionProvincial}|${vSeccionId}|${vCircuitoId}|${vMesaId}|${vAnioSeleccionado}|${vCargoSeleccionado}|${vDistritoSeleccionado}|${seccionSeleccionada}`;
         console.log( "CONSOLE LOG DE LOS DATOS DEL NUEVO INFORME: " + nuevosDatos)
 
     // Verificar si los nuevos datos ya existen en la lista
-    if (!informes.includes(JSON.stringify(nuevosDatos))) {
+    if (!informes.includes(nuevosDatos)) {
         // Si no existen, agregar los nuevos datos a la lista
-        informes.push(JSON.stringify(nuevosDatos));
+        informes.push(nuevosDatos);
         // Guardar la lista actualizada en localStorage bajo la clave 'INFORMES'
-        localStorage.setItem('INFORMES', JSON.stringify(informes));
+        localStorage.setItem(informes);
         ocultarCarteles();
         console.log('Datos guardados con éxito en la lista de informes.');
         cartelVerde.style.display = "block"
@@ -339,6 +344,7 @@ function agregarInforme() {
 function agregaCuadrosAgrupaciones() {
     let cuadroAgrupaciones = document.getElementsByClassName('info-agrupaciones')[0];
     let nuevoDiv = document.createElement('div');
+    cuadroAgrupaciones.innerHTML = '';
     
     resultados.valoresTotalizadosPositivos.forEach((agrup, indice) => {
         let divPartido = document.createElement('div');
@@ -386,10 +392,11 @@ function agregaCuadrosAgrupaciones() {
 
 function agregarResumenVotos() {
     let cuadroBarras = document.getElementsByClassName('grid')[0];
+    cuadroBarras.innerHTML = '';
 
     resultados.valoresTotalizadosPositivos.slice(0, 7).forEach((agrup, indice) => {
-        let porcentajeVotos = agrup.votosPorcentaje;  // Ajusta el valor del porcentaje según tu lógica
-        let colorBarra = coloresGraficaPlenos[indice];  // Ajusta el color según tu lógica
+        let porcentajeVotos = agrup.votosPorcentaje;  
+        let colorBarra = coloresGraficaPlenos[indice];  
         let tituloPartido = agrup.nombreAgrupacion;
 
         let barra = document.createElement('div');
