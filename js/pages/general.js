@@ -1,7 +1,8 @@
-const tipoEleccionn = 2;
+//import { provinciasSVG } from "../mapas.js";
+
+const tipoEleccion = 2;
 const tipoRecuento = 1;
 
-//declaramos las variables para el HTML
 let selectAnio = document.getElementById('select-anio');
 let selectCargo = document.getElementById('select-cargo');
 let selectDistrito = document.getElementById('select-distrito');
@@ -17,14 +18,35 @@ let imagenMapa = document.getElementById('imagen-mapa');
 let mesasEscrutadas = document.getElementById('mesas-escrutadas-numero');
 let electores = document.getElementById('electores-numero');
 let participacionSobreEscrutado = document.getElementById('participacion-sobre-escrutado');
-let svgMapa = document.getElementById('svg-mapa');
+let svgMapa = document.getElementById('img-mapa');
 let svgTituloMapa = document.getElementById("titulo-svg");
 let anioString = "";
 let categoriaString = "";
 let distritoString = "";
 let seccionString = "";
 
-//arreglo constante con los mapas e ID para buscarlo despues
+let cuadroBarrasPartidos = document.getElementById('mostrar-grafica');
+cuadroBarrasPartidos.style.display = 'none';
+
+let coloresGraficaPlenos = [
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-amarillo'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-celeste'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-bordo'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-lila'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-lila2'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-verde'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-gris')
+];
+let coloresGraficaLivianos = [
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-amarillo-claro'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-celeste-claro'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-bordo-claro'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-lila-claro'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-lila2-claro'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-verde-claro'),
+    getComputedStyle(document.documentElement).getPropertyValue('--grafica-gris-claro')
+];
+
 const provinciasSVG = [
     { provincia: 'Ciudad Autónoma de Buenos Aires', id: '1', svg: '<svg><path class="leaflet-interactive" stroke="#18a0fb" stroke-opacity="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#18a0fb" fill-opacity="1" fill-rule="evenodd" d="M182 61L179 56L176 58L178 56L176 53L173 55L169 47L168 48L164 45L157 43L158 41L155 41L154 36L149 32L148 33L143 29L142 30L145 32L140 29L138 32L137 30L140 29L139 26L137 28L136 23L133 22L130 27L103 41L81 99L82 134L131 179L159 140L168 137L171 139L174 138L181 141L186 137L195 136L200 130L207 125L205 120L210 118L210 112L205 107L210 110L213 114L215 113L215 110L217 110L218 112L219 111L217 109L221 111L224 109L220 106L222 106L221 102L218 102L216 104L215 103L217 102L212 102L220 101L219 95L216 92L214 86L208 81L200 83L199 80L201 79L202 81L200 77L206 75L203 75L203 73L206 73L201 71L205 70L199 69L198 68L202 68L200 66L195 67L194 66L198 65L188 62L192 62L190 60L183 59L189 64L187 65z"></path></svg>' },
     { provincia: 'Buenos Aires', id: '2',  svg: '<svg><path class="leaflet-interactive" stroke="#18a0fb" stroke-opacity="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#18a0fb" fill-opacity="1" fill-rule="evenodd" d="M171 55L163 53L150 45L147 50L143 49L133 60L114 60L114 151L116 151L120 155L122 156L126 153L128 149L124 145L126 143L126 138L128 138L129 133L126 129L126 122L134 126L139 126L169 119L179 114L189 97L190 89L189 87L186 87L182 82L185 75L181 69L171 63L170 64L170 58z"></path></svg>' },
@@ -54,33 +76,28 @@ const provinciasSVG = [
 
 let datosAPI = [];
 let datosCargos = [];
+let datosDistritos = [];
 
-//AGREGAR PARA QUE SIRVE ESTA FUNCION
-var primeraOpcion = document.createElement('option');
+
 document.addEventListener('DOMContentLoaded', function () {
     //Se llama a la función cuando se carga la página
     consultarComboAnio();
 });
-
-
-//funcion para ocultar carteles verde, amarillo y rojo
 function ocultarCarteles(){
     cartelVerde.style.display = 'none';
     cartelAmarillo.style.display = 'none';
     cartelrojo.style.display = 'none';
 }
-
-//funcion para ocultar el cartel de carga para la api
 function ocultarCarga(){
     cargandoDatos.style.visibility = 'hidden';
 }
-
-//los ejecutamos para que quede oculto hasta que se llamen dentro de otras funciones
 ocultarCarteles();
 ocultarCarga();
 
-//funcion para consultar a la api y se guarda el año en los options creados
-async function consultarComboAnio() {
+cartelAmarillo.innerHTML='<i class="fa fa-exclamation"></i> Debe seleccionar los valores a filtrar y hacer clic en el botón FILTRAR';
+cartelAmarillo.style.display = "block";
+
+async function consultarComboAnio(){
     try {
         const respuesta = await fetch("https://resultados.mininterior.gob.ar/api/menu/periodos");
         if (respuesta.ok) {
@@ -95,111 +112,134 @@ async function consultarComboAnio() {
                 option.text = anio; // Convertir a cadena para que el texto se pueda ver en el combo
                 selectAnio.appendChild(option); // Se agregan las opciones en el select
             });
-
         } else {
             console.log('Error 404');
         }
     }
     catch (err) {
-        console.log(err);
+        console.log("ERROR AL CARGAR LOS AÑOS " + err);
     }
-
 }
 
-//funcion para consultar el cargo politico, se guarda en una variable y se asigna a los options
 function comboCargo() {
+    cartelAmarillo.style.display = "none";
     fetch("https://resultados.mininterior.gob.ar/api/menu?año=" + selectAnio.value)
         .then(response => response.json())
         .then(data => {
             datosAPI = data;
-            console.log(datosAPI);
+            console.log(datosAPI)
 
             selectCargo.innerHTML = '';
 
-            datosAPI.forEach((eleccion) => {
-                if (eleccion.IdEleccion === tipoEleccionn) {
-                    eleccion.Cargos.forEach(cargo => {
-                        const option = document.createElement('option');
-                        option.value = cargo.IdCargo;
-                        option.text = cargo.Cargo;
-                        selectCargo.appendChild(option);
-                    });
-                };
-            });
+            var primeraOpcion = document.createElement('option');
+            primeraOpcion.value = '0';
+            primeraOpcion.text = 'Cargo';
+            primeraOpcion.disabled = true;
+            primeraOpcion.selected = true;
+            selectCargo.appendChild(primeraOpcion);
 
+            if (datosAPI && datosAPI.length > 0) {
+                datosAPI.forEach((eleccion) => {
+                    if (eleccion.IdEleccion == tipoEleccion) {
+                        datosCargos = eleccion.Cargos;
+                        console.log(datosCargos);
+                        datosCargos.forEach(cargo => {
+                            const option = document.createElement('option');
+                            option.value = cargo.IdCargo;
+                            option.text = cargo.Cargo;
+                            selectCargo.appendChild(option);
+                        });
+                    }
+                });
+            } else {
+                console.log('La variable datosAPI es undefined o está vacía.');
+            }
+            
         })
         .catch(error => {
             console.error('Error al cargar los datos: ', error);
         });
 }
 
-//funcion para consultar la provincia, se guarda en variable y se asigna al option creado
 function comboDistrito() {
     selectDistrito.innerHTML = '';
+
+    var primeraOpcion = document.createElement('option');
+    primeraOpcion.value = '0';
+    primeraOpcion.text = 'Distrito';
+    primeraOpcion.disabled = true;
+    primeraOpcion.selected = true;
+    selectDistrito.appendChild(primeraOpcion);
     try {
-        console.log(datosAPI);
-        datosAPI.forEach((eleccion) => {
-            if (eleccion.IdEleccion == tipoEleccionn) {
-                eleccion.Cargos.forEach(cargo => {
-                    if (cargo.IdCargo == selectCargo.value) {
-                        console.log(cargo.Distritos);
-                        primeraOpcion.value = '0';
-                        primeraOpcion.text = 'Distrito';
-                        primeraOpcion.disabled = true;
-                        primeraOpcion.selected = true;
-                        selectDistrito.appendChild(primeraOpcion);
-                        cargo.Distritos.forEach(distrito => {
-                            const option = document.createElement('option');
-                            option.value = distrito.IdDistrito;
-                            option.text = distrito.Distrito;
-                            selectDistrito.appendChild(option);
-                        });
-                    }
-                });
-            }
-        });
+        if (datosAPI && datosAPI.length > 0) {
+            datosAPI.forEach((eleccion) => {
+                if (eleccion.IdEleccion == tipoEleccion) {
+                    datosCargos.forEach(cargo => {  
+                        if (cargo.IdCargo == selectCargo.value) {
+                            datosDistritos = cargo.Distritos;
+                            console.log(datosDistritos);
+                            datosDistritos.forEach(distrito => {
+                                const option = document.createElement('option');
+                                option.value = distrito.IdDistrito;
+                                option.text = distrito.Distrito;
+                                selectDistrito.appendChild(option);
+                            });
+                        }
+                    });
+                }
+            });
+        } else {
+            console.log('La variable datosAPI es undefined o está vacía.');
+        }
+        
     }
     catch (err) {
-        console.log(err);
-    }
-}
-//funcion para consultar y guardar el departamento de la provincia, crear y guardar el valor en el option creado
-function comboSeccion() {
-    selectSeccion.innerHTML = '';
-    try {
-        datosAPI.forEach((eleccion) => {
-            if (eleccion.IdEleccion == tipoEleccionn) {
-                eleccion.Cargos.forEach(cargo => {
-                    if (cargo.IdCargo == selectCargo.value) {
-                        cargo.Distritos.forEach(distrito => {
-                            if (distrito.IdDistrito == selectDistrito.value) {
-                                distrito.SeccionesProvinciales.forEach(secProvincial => {
-                                    seccionProvincial.value = secProvincial.IDSeccionProvincial;
-                                    primeraOpcion.value = '0';
-                                    primeraOpcion.text = 'Sección';
-                                    primeraOpcion.disabled = true;
-                                    primeraOpcion.selected = true;
-                                    selectSeccion.appendChild(primeraOpcion);
-                                    secProvincial.Secciones.forEach(seccion => {
-                                        const option = document.createElement('option');
-                                        option.value = seccion.IdSeccion;
-                                        option.text = seccion.Seccion;
-                                        selectSeccion.appendChild(option);
-                                    });
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
-    catch (err) {
-        console.log(err);
+        console.log("ERROR EN COMBO DISTRITOS " + err);
     }
 }
 
-//funcion para validar que los select no esten vacios
+function comboSeccion() {
+    selectSeccion.innerHTML = '';
+
+    var primeraOpcion = document.createElement('option');
+    primeraOpcion.value = '0';
+    primeraOpcion.text = 'Sección';
+    primeraOpcion.disabled = true;
+    primeraOpcion.selected = true;
+    selectSeccion.appendChild(primeraOpcion);
+    try {
+        if (datosAPI && datosAPI.length > 0) {
+            datosAPI.forEach((eleccion) => {
+                if (eleccion.IdEleccion == tipoEleccion) {
+                    datosCargos.forEach(cargo => {
+                        if (cargo.IdCargo == selectCargo.value) {
+                            datosDistritos.forEach(distrito => {
+                                if (distrito.IdDistrito == selectDistrito.value) {
+                                    distrito.SeccionesProvinciales.forEach(secProvincial => {
+                                        seccionProvincial.value = secProvincial.IDSeccionProvincial;
+                                        secProvincial.Secciones.forEach(seccion => {
+                                            const option = document.createElement('option');
+                                            option.value = seccion.IdSeccion;
+                                            option.text = seccion.Seccion;
+                                            selectSeccion.appendChild(option);
+                                        });
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        } else {
+            console.log('La variable datosAPI es undefined o está vacía.');
+        }
+        
+    }
+    catch (err) {
+        console.log("ERROR EN COMBO SECCIONES " + err);
+    }
+}
+
 async function validarSelects() {
     return selectAnio.value !== '0' &&
         selectCargo.value !== '0' &&
@@ -207,12 +247,10 @@ async function validarSelects() {
         selectSeccion.value !== '0';
 }
 
-/*funcion para consultar a la api los resultados de las mesas, se guardan en variables, y se asignan en las etiquetas
-para modificar los titulos, subtitulos y mapas*/
 async function consultarResultados() {
     if (await validarSelects()) {
         ocultarCarteles();
-        const url = `https://resultados.mininterior.gob.ar/api/resultados/getResultados`
+        
         let anioEleccion = selectAnio.value;
         let categoriaId = selectCargo.value;
         let distritoId = selectDistrito.value;
@@ -223,32 +261,39 @@ async function consultarResultados() {
         distritoString = selectDistrito.options[selectDistrito.selectedIndex].innerText;
         seccionString = selectSeccion.options[selectSeccion.selectedIndex].innerText;
 
-        let parametros = `?anioEleccion=${anioEleccion}&tipoRecuento=${tipoRecuento}&tipoEleccion=${tipoEleccionn}&categoriaId=${categoriaId}&distritoId=${distritoId}&seccionProvincialId=${seccionProvincialId}&seccionId=${seccionId}&circuitoId=&mesaId=`
+        const url = `https://resultados.mininterior.gob.ar/api/resultados/getResultados?anioEleccion=${anioEleccion}&tipoRecuento=${tipoRecuento}&tipoEleccion=${tipoEleccion}&categoriaId=${categoriaId}&distritoId=${distritoId}&seccionProvincialId=${seccionProvincialId}&seccionId=${seccionId}&circuitoId=&mesaId=`;
+        
         try {
             ocultarCarteles();
             cargandoDatos.style.visibility = "visible";
-            const response = await fetch(url + parametros);
+            const response = await fetch(url);
+            console.log(response);
             if (response.ok) {
-                cartelVerde.style.display = 'block'
-                tituloPaso.innerHTML = `Elecciones ${anioEleccion} | Paso`
-                subtituloPaso.innerHTML = `${anioEleccion} > Paso > ${categoriaString} > ${distritoString} > ${seccionString}`
+                ocultarCarteles();
+                tituloPaso.innerHTML = `Elecciones ${anioEleccion} | Generales`;
+                subtituloPaso.innerHTML = `${anioEleccion} > Generales > ${categoriaString} > ${distritoString} > ${seccionString}`;
                 resultados = await response.json();
                 ocultarCarga();
-                console.log(resultados)
-                mesasEscrutadas.innerHTML = `Mesas escrutadas ${resultados.estadoRecuento.mesasTotalizadas}`;
-                electores.innerHTML = `Electores ${resultados.estadoRecuento.cantidadElectores}`;
-                participacionSobreEscrutado.innerHTML = `Participacion sobre escrutado ${resultados.estadoRecuento.participacionPorcentaje}%`;
+                console.log(resultados);
+                mesasEscrutadas.innerHTML = `Mesas escrutadas: ${resultados.estadoRecuento.mesasTotalizadas}`;
+                electores.innerHTML = `Electores: ${resultados.estadoRecuento.cantidadElectores}`;
+                participacionSobreEscrutado.innerHTML = `Participacion sobre escrutado: ${resultados.estadoRecuento.participacionPorcentaje}%`;
+
+                agregaCuadrosAgrupaciones();
+
                 for(i=0 ; i<25 ; i++){
                     if(distritoId == i){
-                        
                         svgMapa.innerHTML = provinciasSVG[i-1].svg;
                         svgTituloMapa.innerHTML = provinciasSVG[i-1].provincia;
                         //modificamos el html svg con el arreglo de objetos posicion i-1 porque cuando llega ya es el siguiente
                     }
                 }
 
+                agregarResumenVotos();
+
             } else {    
-                ocultarCarteles();  
+                ocultarCarteles();
+                ocultarCarga();
                 cartelrojo.style.display = 'block'
             }
         }
@@ -256,57 +301,139 @@ async function consultarResultados() {
             ocultarCarteles();
             ocultarCarga();
             cartelrojo.style.display = 'block'
-            
+            console.log("ERROR: " + err);
         }
     } else {
         ocultarCarteles();
+        ocultarCarga();
         cartelAmarillo.style.display = 'block'
     }
-    
 }
 
 
-//funcion para agregar un informe, pero solo en consola
 function agregarInforme() {
     // Obtener la lista de informes almacenados en localStorage bajo la clave 'INFORMES'
     let informes;
-    let informesEnLocalStorage = localStorage.getItem('INFORMES');
+    let informesEnLocalStorage = sessionStorage.getItem('INFORMES');
 
     if (informesEnLocalStorage) {
         informes = JSON.parse(informesEnLocalStorage);
     } else {
         informes = [];
     }
+    if (selectAnio.value === '0' || selectCargo.value === '0' || selectDistrito.value === '0' || selectSeccion.value === '0') {
+        cartelAmarillo.innerHTML='<i class="fa fa-exclamation"></i>Los campos deben estar llenos para agregar el informe.'
+        cartelAmarillo.style.display = "block"
+        return;
+    }
     anioString = selectAnio.options[selectAnio.selectedIndex].innerText;
     categoriaString = selectCargo.options[selectCargo.selectedIndex].innerText;
     distritoString = selectDistrito.options[selectDistrito.selectedIndex].innerText;
-    seccionString = selectSeccion.options[selectSeccion.selectedIndex].innerText;
+    seccionString = selectSeccion.options[selectSeccion.selectedIndex].innerText; 
 
+    let vAnio = selectAnio.value;
+    let vTipoRecuento= tipoRecuento;
+    let vTipoEleccion= tipoEleccion;
+    let vCategoriaId= selectCargo.value;
+    let vDistrito= selectDistrito.value;
+    let vSeccionProvincial= seccionProvincial.value;
+    let vSeccionId= selectSeccion.value;
+    let vCircuitoId= '';
+    let vMesaId= '';
+    let vAnioSeleccionado= anioString;
+    let vCargoSeleccionado= categoriaString;
+    let vDistritoSeleccionado= distritoString;
+    let seccionSeleccionada= seccionString;
+    let nuevosDatos = `${vAnio}|${vTipoRecuento}|${vTipoEleccion}|${vCategoriaId}|${vDistrito}|${vSeccionProvincial}|${vSeccionId}|${vCircuitoId}|${vMesaId}|${vAnioSeleccionado}|${vCargoSeleccionado}|${vDistritoSeleccionado}|${seccionSeleccionada}`;
+    console.log( "CONSOLE LOG DE LOS DATOS DEL NUEVO INFORME: " + nuevosDatos)
 
-    let nuevosDatos = {
-        vAnio: selectAnio.value,
-        vTipoRecuento: tipoRecuento,
-        vTipoEleccion: tipoEleccionn,
-        vCategoriaId: selectCargo.value,
-        vDistrito: selectDistrito.value,
-        vSeccionProvincial: 0,
-        vSeccionId: selectSeccion.value,
-        vCircuitoId: "",
-        vMesaId: "",
-        vAnioSeleccionado: anioString,
-        vCargoSeleccionado: categoriaString,
-        vDistritoSeleccionado: distritoString,
-        seccionSeleccionada: seccionString
-    };
-    console.log(nuevosDatos)
     // Verificar si los nuevos datos ya existen en la lista
-    if (!informes.includes(JSON.stringify(nuevosDatos))) {
+    if (!informes.includes(nuevosDatos)) {
         // Si no existen, agregar los nuevos datos a la lista
-        informes.push(JSON.stringify(nuevosDatos));
+        informes.push(nuevosDatos);
         // Guardar la lista actualizada en localStorage bajo la clave 'INFORMES'
-        localStorage.setItem('INFORMES', JSON.stringify(informes));
+        sessionStorage.setItem('INFORMES', JSON.stringify(informes));
+        ocultarCarteles();
         console.log('Datos guardados con éxito en la lista de informes.');
+        cartelVerde.style.display = "block"
     } else {
-        console.log('Los datos ya están en la lista de informes, no se han agregado.');
+        ocultarCarteles();
+        cartelAmarillo.innerHTML='<i class="fa fa-exclamation"> </i> Los datos ya están en la lista de informes, no se han agregado.'
+        cartelAmarillo.style.display = "block"
     }
 }
+
+
+function agregaCuadrosAgrupaciones() {
+    let cuadroAgrupaciones = document.getElementsByClassName('info-agrupaciones')[0];
+    let nuevoDiv = document.createElement('div');
+    cuadroAgrupaciones.innerHTML = '';
+    
+    resultados.valoresTotalizadosPositivos.forEach((agrup, indice) => {
+        let divPartido = document.createElement('div');
+        divPartido.innerHTML = `<div class="nombre-agrupacion">${agrup.nombreAgrupacion}</div>`;
+        
+        let elementoHR = document.createElement('hr');
+        divPartido.appendChild(elementoHR);
+    
+        let divAgrupaciones = document.createElement('div');
+    
+        agrup.listas.forEach(lista => {
+            let divLista = document.createElement('div');
+            let porcentajeVotosLista = 0;
+
+            if (agrup.votos == 0){
+                porcentajeVotosLista = 0;
+            } else{
+                porcentajeVotosLista = lista.votos * 100 / agrup.votos;
+            }
+            
+            let porcentajeRedondeado = porcentajeVotosLista.toFixed(2);
+
+            let colorPleno = coloresGraficaPlenos[indice % coloresGraficaPlenos.length];
+            let colorLiviano = coloresGraficaLivianos[indice % coloresGraficaLivianos.length];
+
+            divLista.innerHTML = `<div class="div-agrupaciones">
+            <div><b>${lista.nombre}</b></div>
+            <div>${porcentajeRedondeado}% <br> ${lista.votos} votos</div>
+            </div>
+            <div class="progress" style="background: ${colorLiviano};">
+            <div class="progress-bar" style="width:${porcentajeRedondeado}%; background: ${colorPleno};">
+                <span class="progress-bar-text">${porcentajeRedondeado}%</span>
+            </div>
+            </div>`;
+
+            divAgrupaciones.appendChild(divLista);
+        });
+    
+        divPartido.appendChild(divAgrupaciones); // Anidamos divAgrupaciones dentro de divPartido
+        nuevoDiv.appendChild(divPartido);
+    });
+    
+    cuadroAgrupaciones.appendChild(nuevoDiv);
+}
+
+function agregarResumenVotos() {
+    let cuadroBarras = document.getElementsByClassName('grid')[0];
+    cuadroBarras.innerHTML = '';
+
+    resultados.valoresTotalizadosPositivos.slice(0, 7).forEach((agrup, indice) => {
+        let porcentajeVotos = agrup.votosPorcentaje;  
+        let colorBarra = coloresGraficaPlenos[indice];  
+        let tituloPartido = agrup.nombreAgrupacion;
+
+        let barra = document.createElement('div');
+        barra.className = 'bar';
+        barra.innerHTML = `
+            <div class="bar" style="--bar-value: ${porcentajeVotos}%; --bar-color: ${colorBarra};"
+                data-name="${tituloPartido}" title="Partido ${tituloPartido} ${porcentajeVotos}%">
+            </div>
+        `;
+
+        cuadroBarras.appendChild(barra);
+
+    })
+    cuadroBarrasPartidos.style.display = 'block';
+}
+
+
