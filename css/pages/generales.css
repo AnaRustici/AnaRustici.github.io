@@ -235,6 +235,10 @@ main {
     width: 30%;
     margin-bottom: 15px;
     height: 357px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 
