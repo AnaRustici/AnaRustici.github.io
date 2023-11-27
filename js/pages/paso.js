@@ -102,7 +102,7 @@ seccionContenido.style.visibility = 'hidden';
 
 cuadroBarrasPartidos.style.display = 'none';
 
-cartelAmarillo.innerHTML='<i class="fa fa-exclamation"></i> Debe seleccionar los valores a filtrar y hacer clic en el botón FILTRAR';
+cartelAmarillo.innerHTML='<i class="fa fa-exclamation"></i> <b>Debe seleccionar los valores a filtrar y hacer clic en el botón FILTRAR</b>';
 cartelAmarillo.style.display = "block";
 
 async function consultarComboAnio(){
@@ -121,7 +121,7 @@ async function consultarComboAnio(){
                 selectAnio.appendChild(option); // Se agregan las opciones en el select
             });
         } else {
-            console.log('Error 404');
+            console.log('Error al consultar la API');
         }
     }
     catch (err) {
@@ -277,8 +277,6 @@ async function consultarResultados() {
 
                 for(let i=0; i<25; i++){
                     if(distritoId == i){
-                        console.log(distritoId);
-                        console.log(i);
                         svgMapa.innerHTML = provinciasSVG[i-1].svg;
                         svgTituloMapa.innerHTML = provinciasSVG[i-1].provincia;
                         //modificamos el html svg con el arreglo de objetos posicion i-1 porque cuando llega ya es el siguiente
@@ -311,10 +309,10 @@ async function consultarResultados() {
 function agregarInforme() {
     // Obtener la lista de informes almacenados en localStorage bajo la clave 'INFORMES'
     let informes;
-    let informesEnLocalStorage = sessionStorage.getItem('INFORMES');
+    let informesEnSessionStorage = sessionStorage.getItem('INFORMES');
 
-    if (informesEnLocalStorage) {
-        informes = JSON.parse(informesEnLocalStorage);
+    if (informesEnSessionStorage) {
+        informes = JSON.parse(informesEnSessionStorage);
     } else {
         informes = [];
     }

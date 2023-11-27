@@ -65,9 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (sessionStorage.getItem('INFORMES')) {
         let informes = JSON.parse(sessionStorage.getItem('INFORMES'));
         console.log("INFORMES: "+ informes);
-        //let informesSinComillas = informes.map(valor => valor.replace(/^"|"$/g, ''));
-        //console.log("RESULTADO DE INFORMES: " + informesSinComillas);
-        //console.log("PRIMERA CADENA DE INFORMES: " + informesSinComillas[0]);
         informes.forEach(datos => {
             let resultado = armarUrl(datos);
             const url = resultado[0];
@@ -156,7 +153,7 @@ function crearInforme(resultados, info) {
         mensajeCargando.style.visibility = 'hidden';
         seccionTitulo.style.visibility = 'visible';
         seccionContenido.style.visibility = 'visible';
-
+        
         let eleccion = '';
 
         if (info[1] == 1){
@@ -185,14 +182,14 @@ function crearInforme(resultados, info) {
 
         // TD PARA EL MAPA
         for (i = 0; i < 25; i++) {
-            if (info[4] - 1 == i) {
+            if (info[4] == i) {
                 console.log("EL DISTRITO ES: " + info[4]);
                 // Convierte la cadena SVG en un nodo DOM antes de adjuntarla
                 let div = document.createElement('div');
-                div.innerHTML = provinciasSVG[i].svg;
+                div.innerHTML = provinciasSVG[i-1].svg;
 
                 // AGREGO EL MAPA AL PRIMER TD
-                primerTD.appendChild(div.firstChild);
+                primerTD.appendChild(div);
             }
         }
         

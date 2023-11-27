@@ -1,5 +1,12 @@
-main {
+/*main {
     min-height: 700px;
+}*/
+body {
+    display: flex;
+    flex-direction: column;
+}
+body footer {
+    justify-content: flex-end;
 }
 
 .menu {

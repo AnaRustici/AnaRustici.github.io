@@ -102,7 +102,7 @@ seccionContenido.style.visibility = 'hidden';
 
 cuadroBarrasPartidos.style.display = 'none';
 
-cartelAmarillo.innerHTML='<i class="fa fa-exclamation"></i> Debe seleccionar los valores a filtrar y hacer clic en el botón FILTRAR';
+cartelAmarillo.innerHTML='<i class="fa fa-exclamation"></i> <b>Debe seleccionar los valores a filtrar y hacer clic en el botón FILTRAR</b>';
 cartelAmarillo.style.display = "block";
 
 async function consultarComboAnio(){
@@ -121,7 +121,7 @@ async function consultarComboAnio(){
                 selectAnio.appendChild(option); // Se agregan las opciones en el select
             });
         } else {
-            console.log('Error 404');
+            console.log('Error al consultar la API');
         }
     }
     catch (err) {
