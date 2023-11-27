@@ -212,7 +212,6 @@ function comboSeccion() {
                         cargo.Distritos.forEach(distrito => {
                             if (distrito.IdDistrito == selectDistrito.value) {
                                 distrito.SeccionesProvinciales.forEach(secProvincial => {
-                                    seccionProvincial.value = secProvincial.IDSeccionProvincial;
                                     secProvincial.Secciones.forEach(seccion => {
                                         const option = document.createElement('option');
                                         option.value = seccion.IdSeccion;
@@ -308,10 +307,10 @@ async function consultarResultados() {
 function agregarInforme() {
     // Obtener la lista de informes almacenados en localStorage bajo la clave 'INFORMES'
     let informes;
-    let informesEnLocalStorage = sessionStorage.getItem('INFORMES');
+    let informesEnSessionStorage = sessionStorage.getItem('INFORMES');
 
-    if (informesEnLocalStorage) {
-        informes = JSON.parse(informesEnLocalStorage);
+    if (informesEnSessionStorage) {
+        informes = JSON.parse(informesEnSessionStorage);
     } else {
         informes = [];
     }
@@ -363,12 +362,17 @@ function agregarInforme() {
 function agregaCuadrosAgrupaciones() {
     let cuadroAgrupaciones = document.getElementsByClassName('info-agrupaciones')[0];
     let nuevoDiv = document.createElement('div');
+    let contador = 0;
     cuadroAgrupaciones.innerHTML = '';
-    
-    resultados.valoresTotalizadosPositivos.forEach((agrup, indice) => {
+
+    resultados.valoresTotalizadosPositivos.forEach(agrup => {
+        if(contador == 7){
+            contador = 0;
+        }
+
         let divPartido = document.createElement('div');
-        let colorPleno = coloresGraficaPlenos[indice % coloresGraficaPlenos.length];
-        let colorLiviano = coloresGraficaLivianos[indice % coloresGraficaLivianos.length];
+        let colorPleno = coloresGraficaPlenos[contador];
+        let colorLiviano = coloresGraficaLivianos[contador];
 
         divPartido.innerHTML = `<div class="div-agrupaciones">
         <div><b>${agrup.nombreAgrupacion}</b></div>
@@ -387,8 +391,10 @@ function agregaCuadrosAgrupaciones() {
         nuevoDiv.appendChild(divPartido);
         nuevoDiv.appendChild(divBarra);
         nuevoDiv.appendChild(elementoHR);
-    
+
+        contador = contador + 1;
     });
+    
     cuadroAgrupaciones.appendChild(nuevoDiv);
 }
 
@@ -412,5 +418,6 @@ function agregarResumenVotos() {
         cuadroBarras.appendChild(barra);
 
     })
+    
     cuadroBarrasPartidos.style.display = 'block';
 }

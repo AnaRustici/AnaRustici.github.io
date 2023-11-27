@@ -212,7 +212,6 @@ function comboSeccion() {
                         cargo.Distritos.forEach(distrito => {
                             if (distrito.IdDistrito == selectDistrito.value) {
                                 distrito.SeccionesProvinciales.forEach(secProvincial => {
-                                    seccionProvincial.value = secProvincial.IDSeccionProvincial;
                                     secProvincial.Secciones.forEach(seccion => {
                                         const option = document.createElement('option');
                                         option.value = seccion.IdSeccion;
@@ -276,8 +275,10 @@ async function consultarResultados() {
 
                 agregaCuadrosAgrupaciones();
 
-                for(i=0 ; i<25 ; i++){
+                for(let i=0; i<25; i++){
                     if(distritoId == i){
+                        console.log(distritoId);
+                        console.log(i);
                         svgMapa.innerHTML = provinciasSVG[i-1].svg;
                         svgTituloMapa.innerHTML = provinciasSVG[i-1].provincia;
                         //modificamos el html svg con el arreglo de objetos posicion i-1 porque cuando llega ya es el siguiente
@@ -289,18 +290,20 @@ async function consultarResultados() {
             } else {    
                 ocultarCarteles();
                 ocultarCarga();
+                cartelrojo.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Error: Se produjo un error al filtrar la información';
                 cartelrojo.style.display = 'block'
             }
         }
         catch (err) {
             ocultarCarteles();
             ocultarCarga();
-            cartelrojo.style.display = 'block'
+            cartelrojo.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Error: Se produjo un error al filtrar la información';
+            cartelrojo.style.display = 'block';
         }
     } else {
         ocultarCarteles();
         ocultarCarga();
-        cartelAmarillo.style.display = 'block'
+        cartelAmarillo.style.display = 'block';
     }
 }
 
@@ -363,44 +366,69 @@ function agregarInforme() {
 function agregaCuadrosAgrupaciones() {
     let cuadroAgrupaciones = document.getElementsByClassName('info-agrupaciones')[0];
     let nuevoDiv = document.createElement('div');
+    let contador = 0;
     cuadroAgrupaciones.innerHTML = '';
     
-    resultados.valoresTotalizadosPositivos.forEach((agrup, indice) => {
+    resultados.valoresTotalizadosPositivos.forEach(agrup => {
+        if(contador == 7){
+            contador = 0;
+        }
+
         let divPartido = document.createElement('div');
-        divPartido.innerHTML = `<div class="nombre-agrupacion">${agrup.nombreAgrupacion}</div>`;
+        divPartido.innerHTML = `<div class="nombre-agrupacion">${agrup.nombreAgrupacion}
+        <div>${agrup.votosPorcentaje}% <br> ${agrup.votos} votos</div>
+        </div>`;
         
         let elementoHR = document.createElement('hr');
-        divPartido.appendChild(elementoHR);
     
         let divAgrupaciones = document.createElement('div');
     
-        agrup.listas.forEach(lista => {
-            let divLista = document.createElement('div');
-            let porcentajeVotosLista = 0;
+        if(!agrup.listas) {
+            let divInfoAgrupacion = document.createElement('div');
+            let colorPleno = coloresGraficaPlenos[contador];
+            let colorLiviano = coloresGraficaLivianos[contador];
 
-            if (agrup.votos == 0){
-                porcentajeVotosLista = 0;
-            } else{
-                porcentajeVotosLista = lista.votos * 100 / agrup.votos;
-            }
-            
-            let porcentajeRedondeado = porcentajeVotosLista.toFixed(2);
-
-            let colorPleno = coloresGraficaPlenos[indice % coloresGraficaPlenos.length];
-            let colorLiviano = coloresGraficaLivianos[indice % coloresGraficaLivianos.length];
-
-            divLista.innerHTML = `<div class="div-agrupaciones">
-            <div><b>${lista.nombre}</b></div>
-            <div>${porcentajeRedondeado}% <br> ${lista.votos} votos</div>
-            </div>
+            divInfoAgrupacion.innerHTML = `
             <div class="progress" style="background: ${colorLiviano};">
-            <div class="progress-bar" style="width:${porcentajeRedondeado}%; background: ${colorPleno};">
-                <span class="progress-bar-text">${porcentajeRedondeado}%</span>
+            <div class="progress-bar" style="width:${agrup.votosPorcentaje}%; background: ${colorPleno};">
+                <span class="progress-bar-text">${agrup.votosPorcentaje}%</span>
             </div>
             </div>`;
 
-            divAgrupaciones.appendChild(divLista);
-        });
+            divAgrupaciones.appendChild(divInfoAgrupacion);
+
+        } else {
+            agrup.listas.forEach(lista => {
+                divPartido.appendChild(elementoHR);
+                let divLista = document.createElement('div');
+                let porcentajeVotosLista = 0;
+    
+                if (agrup.votos == 0){
+                    porcentajeVotosLista = 0;
+                } else{
+                    porcentajeVotosLista = lista.votos * 100 / agrup.votos;
+                }
+                
+                let porcentajeRedondeado = porcentajeVotosLista.toFixed(2);
+    
+                let colorPleno = coloresGraficaPlenos[contador];
+                let colorLiviano = coloresGraficaLivianos[contador];
+    
+                divLista.innerHTML = `<div class="div-agrupaciones">
+                <div><b>${lista.nombre}</b></div>
+                <div>${porcentajeRedondeado}% <br> ${lista.votos} votos</div>
+                </div>
+                <div class="progress" style="background: ${colorLiviano};">
+                <div class="progress-bar" style="width:${porcentajeRedondeado}%; background: ${colorPleno};">
+                    <span class="progress-bar-text">${porcentajeRedondeado}%</span>
+                </div>
+                </div>`;
+    
+                divAgrupaciones.appendChild(divLista);
+            });
+        }
+
+        contador = contador + 1;
     
         divPartido.appendChild(divAgrupaciones); // Anidamos divAgrupaciones dentro de divPartido
         nuevoDiv.appendChild(divPartido);

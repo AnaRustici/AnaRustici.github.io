@@ -85,6 +85,7 @@ function mostrarTexto(tipoTexto, mensaje) {
 
 
 function armarUrl(datos) {
+    console.log("ESTA ES LA DATA DE LA URL A USAR: " + datos);
     let datosInforme = datos.split('|');
     console.log(datosInforme);
     anioEleccion = datosInforme[0];
@@ -93,7 +94,6 @@ function armarUrl(datos) {
     tipoEleccion = datosInforme[2];
     categoriaId = datosInforme[3];
     distritoId = datosInforme[4];
-    console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSS " + datosInforme[4]);
     seccionProvincialId = datosInforme[5];
     seccionId = datosInforme[6];
     circuitoId = datosInforme[7];
@@ -118,6 +118,7 @@ function armarUrl(datos) {
 }
 
 async function consultarResultados(url, info) {
+    console.log("URL UTILIZADA: " + url);
     try {
         console.log('entra en el try de consultar resultados')
         //mensajeCargando.style.visibility = 'visible';
