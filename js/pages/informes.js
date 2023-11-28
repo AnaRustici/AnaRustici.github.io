@@ -100,11 +100,7 @@ function armarUrl(datos) {
     distritoSeleccionado = datosInforme[11];
     seccionSeleccionada = datosInforme[12];
 
-    if (tipoEleccion == 1) {
-        eleccion = "Paso"
-    } else {
-        eleccion = "Generales"
-    }
+    
     let urlSinParametros = `https://resultados.mininterior.gob.ar/api/resultados/getResultados`;
     let parametros = `?anioEleccion=${anioEleccion}&tipoRecuento=${tipoRecuento}&tipoEleccion=${tipoEleccion}&categoriaId=${categoriaId}&distritoId=${distritoId}&seccionProvincialId=${seccionProvincialId}&seccionId=${seccionId}&circuitoId=${circuitoId}&mesaId=${mesaId}`;
 
@@ -184,7 +180,7 @@ function crearInforme(resultados, info) {
         for (i = 0; i < 25; i++) {
             if (info[4] == i) {
                 console.log("EL DISTRITO ES: " + info[4]);
-                // Convierte la cadena SVG en un nodo DOM antes de adjuntarla
+                // Agrego svg a un elemento div
                 let div = document.createElement('div');
                 div.innerHTML = provinciasSVG[i-1].svg;
 

@@ -117,7 +117,7 @@ async function consultarComboAnio(){
             data.forEach(anio => {
                 const option = document.createElement('option');
                 option.value = anio; // Se establece el valor del combo
-                option.text = anio; // Convertir a cadena para que el texto se pueda ver en el combo
+                option.text = anio; 
                 selectAnio.appendChild(option); // Se agregan las opciones en el select
             });
         } else {
@@ -307,7 +307,7 @@ async function consultarResultados() {
 
 
 function agregarInforme() {
-    // Obtener la lista de informes almacenados en localStorage bajo la clave 'INFORMES'
+    // Obtener la lista de informes almacenados en sessionStorage bajo la clave 'INFORMES'
     let informes;
     let informesEnSessionStorage = sessionStorage.getItem('INFORMES');
 
@@ -347,7 +347,7 @@ function agregarInforme() {
     if (!informes.includes(nuevosDatos)) {
         // Si no existen, agregar los nuevos datos a la lista
         informes.push(nuevosDatos);
-        // Guardar la lista actualizada en localStorage bajo la clave 'INFORMES'
+        // Guardar la lista actualizada en sessionStorage bajo la clave 'INFORMES'
         sessionStorage.setItem('INFORMES', JSON.stringify(informes));
         ocultarCarteles();
         console.log('Datos guardados con éxito en la lista de informes.');
