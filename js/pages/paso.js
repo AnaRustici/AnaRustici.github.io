@@ -1,4 +1,4 @@
-//import { provinciasSVG } from "../mapas.js";
+//import { provinciasSVG } from "./mapas.js";
 
 // VARIABLES
 const tipoEleccion = 1;
